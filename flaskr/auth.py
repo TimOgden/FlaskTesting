@@ -10,7 +10,7 @@ from flaskr.db import get_db
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 
-@bp.route('/register', methods=('GET','POST'))
+@bp.route('/register', methods=('GET', 'POST'))
 def register():
     if request.method == 'POST':
         username = request.form['username']
@@ -55,7 +55,7 @@ def login():
         elif not check_password_hash(user['password'], password):
             error = 'Incorrect password'
 
-        if error is not None:
+        if error is None:
             session.clear()
             session['user_id'] = user['id']
             return redirect(url_for('index'))
@@ -68,8 +68,8 @@ def login():
 @bp.before_app_request
 def load_logged_in_user():
     user_id = session.get('user_id')
-
-    if user_id is not None:
+    print('User id:', user_id)
+    if user_id is None:
         g.user = None
     else:
         g.user = get_db().execute(
@@ -88,6 +88,7 @@ def login_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
         if g.user is None:
+            print('Not signed in!')
             return redirect(url_for('auth.login'))
 
         return view(**kwargs)
